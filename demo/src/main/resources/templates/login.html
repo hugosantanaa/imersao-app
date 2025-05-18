@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required>
+
+            <button type="submit">Entrar</button>
+        </form>
+
+        <p>Não tem uma conta? <a th:href="@{/register}">Cadastre-se</a></p>
+
+        <div id="erro" style="color: red; margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            const erroEl = document.getElementById("erro");
+            erroEl.textContent = "";
+
+            try {
+                const response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                if (!response.ok) {
+                    const erroTexto = await response.text();
+                    throw new Error(erroTexto || "Erro ao fazer login.");
+                }
+
+                const data = await response.json();
+
+                // Salva o token e outros dados no localStorage
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("email", data.email);
+                localStorage.setItem("role", data.role);
+
+                // Redireciona para o index
+                window.location.href = "/index";
+
+            } catch (err) {
+                erroEl.textContent = err.message;
+            }
+        });
+    </script>
+</body>
+</html>

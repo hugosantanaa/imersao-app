@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Imersão App</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <h2>Imersão App</h2>
+            <ul>
+                <li><a href="#" hx-get="/usuarios/fragment" hx-target="#content" hx-swap="innerHTML">Usuários</a></li>
+                <li><a href="#" hx-get="/enderecos/fragment" hx-target="#content" hx-swap="innerHTML">Endereços</a></li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a href="#" hx-get="/admin/fragment" hx-target="#content" hx-swap="innerHTML">Admin</a>
+                </li>
+                <li><a th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="content">
+        <!-- Aqui os fragmentos serão carregados dinamicamente -->
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Imersão App</p>
+    </footer>
+</body>
+</html>
