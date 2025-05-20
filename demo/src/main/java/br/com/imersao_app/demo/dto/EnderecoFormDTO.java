@@ -1,7 +1,9 @@
 package br.com.imersao_app.demo.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+@AllArgsConstructor
 @Data
 public class EnderecoFormDTO {
     private String logradouro;
@@ -11,4 +13,7 @@ public class EnderecoFormDTO {
     private String cidade;
     private String estado;
     private String cep;
+    
+    public EnderecoFormDTO() {
+    }
 }

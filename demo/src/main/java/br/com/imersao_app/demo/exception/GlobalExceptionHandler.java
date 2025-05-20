@@ -1,44 +1,97 @@
 package br.com.imersao_app.demo.exception;
 
-import jakarta.persistence.EntityNotFoundException;
+import br.com.imersao_app.demo.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.naming.AuthenticationException;
-import javax.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	
+	@ExceptionHandler(TokenException.class)
+	public ResponseEntity<ErrorResponse> handleTokenException(TokenException ex) {
+	    ErrorResponse response = ErrorResponse.builder()
+	        .timestamp(LocalDateTime.now())
+	        .status(HttpStatus.UNAUTHORIZED.value())
+	        .error("Token Error")
+	        .message(ex.getMessage())
+	        .errorCode(ex.getErrorCode())
+	        .build();
+	    
+	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+	}
 
-    // Captura exceção quando a entidade não for encontrada
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    // Captura erros de validação (@Valid)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+        List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(f -> ErrorResponse.FieldError.builder()
+                .field(f.getField())
+                .message(f.getDefaultMessage())
+                .build())
+            .collect(Collectors.toList());
+
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Bad Request")
+            .message("Erro de validação")
+            .fieldErrors(fieldErrors)
+            .build();
+
+        return ResponseEntity.badRequest().body(response);
     }
 
-    // Captura exceções de violação de restrição (validação)
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<String> handleConstraintViolation(ConstraintViolationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    // Captura exceções customizadas
+    @ExceptionHandler(ApiErrorException.class)
+    public ResponseEntity<ErrorResponse> handleApiError(ApiErrorException ex) {
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(ex.getStatus().value())
+            .error(ex.getStatus().getReasonPhrase())
+            .message(ex.getMessage())
+            .errorCode(ex.getErrorCode())
+            .build();
+
+        return new ResponseEntity<>(response, ex.getStatus());
     }
 
-    // Captura exceções genéricas
+    // Captura erros de autenticação (Spring Security)
+    @ExceptionHandler({AccessDeniedException.class, AutenticacaoException.class})
+    public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex) {
+        HttpStatus status = ex instanceof AutenticacaoException ? 
+            HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN;
+
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(status.value())
+            .error(status.getReasonPhrase())
+            .message(ex.getMessage())
+            .errorCode("ACCESS_DENIED")
+            .build();
+
+        return new ResponseEntity<>(response, status);
+    }
+
+    // Captura erros genéricos (500)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro interno: " + ex.getMessage());
-    }
+    public ResponseEntity<ErrorResponse> handleGenericError(Exception ex) {
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error("Internal Server Error")
+            .message("Ocorreu um erro inesperado")
+            .build();
 
-    // Captura exceção de autenticação
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Falha na autenticação: " + ex.getMessage());
-    }
-    
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<String> handleUsuarioNaoEncontrado(UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado: " + ex.getMessage());
+        return ResponseEntity.internalServerError().body(response);
     }
 }

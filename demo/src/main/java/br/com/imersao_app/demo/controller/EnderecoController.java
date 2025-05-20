@@ -52,7 +52,7 @@ public class EnderecoController {
         return ResponseEntity.noContent().build();
     }
 
-    private EnderecoDTO toDTO(Endereco endereco) {
+    protected EnderecoDTO toDTO(Endereco endereco) {
         EnderecoDTO dto = new EnderecoDTO();
         dto.setId(endereco.getId());
         dto.setLogradouro(endereco.getLogradouro());
@@ -65,7 +65,7 @@ public class EnderecoController {
         return dto;
     }
 
-    private Endereco fromDTO(EnderecoFormDTO dto) {
+    protected Endereco fromDTO(EnderecoFormDTO dto) {
         Endereco endereco = new Endereco();
         endereco.setLogradouro(dto.getLogradouro());
         endereco.setNumero(dto.getNumero());

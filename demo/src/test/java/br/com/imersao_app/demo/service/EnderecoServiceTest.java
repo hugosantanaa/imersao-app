@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -27,8 +29,12 @@ class EnderecoServiceTest {
 
     @Test
     void deveListarTodosEnderecos() {
-        when(enderecoRepository.findAll()).thenReturn(Arrays.asList(new Endereco(), new Endereco()));
-        assertEquals(2, enderecoService.listarTodos().size());
+        Pageable pageable = PageRequest.of(0, 10); // página 0, 10 itens por página
+
+        when(enderecoRepository.findAll(pageable))
+            .thenReturn(new PageImpl<>(Arrays.asList(new Endereco(), new Endereco())));
+
+        assertEquals(2, enderecoService.listarTodos(pageable).getContent().size());
     }
 
     @Test

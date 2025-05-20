@@ -6,13 +6,11 @@ import br.com.imersao_app.demo.entity.Usuario;
 import br.com.imersao_app.demo.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +50,7 @@ public class UsuarioService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		return usuarioRepository.findByEmail(email)
+		return usuarioRepository.findByEmailIgnoreCase(email)
 				.orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com e-mail: " + email));
 	}
 }

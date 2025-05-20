@@ -1,20 +1,19 @@
 package br.com.imersao_app.demo.controller;
-
 import br.com.imersao_app.demo.dto.EnderecoDTO;
 import br.com.imersao_app.demo.dto.UsuarioDTO;
 import br.com.imersao_app.demo.dto.UsuarioFormDTO;
 import br.com.imersao_app.demo.entity.Usuario;
 import br.com.imersao_app.demo.service.UsuarioService;
 import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Page;
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
+
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -22,6 +21,7 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -38,20 +38,21 @@ public class UsuarioController {
         return ResponseEntity.ok(toDTO(usuario));
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<UsuarioDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioFormDTO dto) {
-//        Usuario usuario = fromDTO(dto);
-//        usuario.setId(id); // <- Aqui está o que estava faltando
-//        Usuario atualizado = usuarioService.atualizar(id, usuario);
-//        return ResponseEntity.ok(toDTO(atualizado));
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> atualizar(@PathVariable Long id, @Valid @RequestBody UsuarioFormDTO dto) {
+        Usuario usuario = fromDTO(dto);
+        usuario.setId(id);
+        Usuario atualizado = usuarioService.atualizar(id, usuario);
+        return ResponseEntity.ok(toDTO(atualizado));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         usuarioService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
-    private UsuarioDTO toDTO(Usuario usuario) {
+    protected UsuarioDTO toDTO(Usuario usuario) {
         UsuarioDTO dto = new UsuarioDTO();
         dto.setId(usuario.getId());
         dto.setNome(usuario.getNome());
@@ -78,4 +79,11 @@ public class UsuarioController {
         return dto;
     }
 
+    protected Usuario fromDTO(UsuarioFormDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        return usuario;
+    }
 }
