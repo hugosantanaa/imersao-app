@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Usuários</title>
+</head>
+<body>
+    <div th:fragment="users-content">
+        <div class="d-flex justify-content-between mb-4">
+            <h2>Gerenciamento de Usuários</h2>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#userModal">
+                Adicionar Usuário
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table">
+                    <!-- Dados serão carregados via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal de usuário -->
+        <div th:replace="shared/modal-form :: user-modal"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await api.get('/api/users');
+                renderUsersTable(response.data);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showToast('Erro ao carregar usuários', 'error');
+            }
+        });
+
+        function renderUsersTable(users) {
+            const tableBody = document.getElementById('users-table');
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.nome}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editUser(${user.id})">
+                            Editar
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                            Excluir
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

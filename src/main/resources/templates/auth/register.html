@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro</title>
+</head>
+<body>
+    <div class="container">
+        <form id="registerForm">
+            <input type="hidden" name="_method" value="post">
+            
+            <div class="form-group">
+                <label>Nome:</label>
+                <input type="text" name="nome" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Senha:</label>
+                <input type="password" name="senha" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Tipo de Conta:</label>
+                <select name="role" required>
+                    <option value="USUARIO">Usuário</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                </select>
+            </div>
+            
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/login?registered=true';
+                } else {
+                    alert('Erro no cadastro');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
